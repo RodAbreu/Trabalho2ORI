@@ -1,10 +1,6 @@
-/*From
-https://sites.google.com/site/itstudentjunction/lab-programming-solutions/data-structures-programs/trees--programs---data-structures/program-for-implementation-of-b-tree-insertion--deletion
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
-#define M 3
+#define M 5
 
 struct node {
     int n; /* n < M No. of keys in node will always less than order of B tree */
@@ -84,7 +80,7 @@ int main()
             printTotal(root);
             break;
         case 8:
-            getMinMax(root); 
+            getMinMax(root);
             break;
         case 9:
         	printf("The maximum level in this tree is:\n");
@@ -191,7 +187,6 @@ enum KeyStatus ins(struct node *ptr, int key, int *upKey,struct node **newnode)
 void display(struct node *ptr, int blanks)
 {
     if (ptr)
-    {
         int i;
         for(i=1; i<=blanks; i++)
             printf(" ");
@@ -205,27 +200,50 @@ void display(struct node *ptr, int blanks)
 
 void search(int key)
 {
-    int pos, i, n;
-    struct node *ptr = root;
-    printf("Search path:\n");
-    while (ptr)
+    int pos, i, n; // declarao de variaveis
+    struct node *ptr = root; // cria um nó ponteiro para receber a raiz
+    printf("Search path:\n"); // pede para o usuario digitar o item que deseja procurar
+    while (ptr) // enquanto ptr não for NULL
     {
-        n = ptr->n;
+        n = ptr->n; // numero de chaves dentro do nó
         for (i=0; i < ptr->n; i++)
-            printf(" %d",ptr->keys[i]);
+            printf(" %d",ptr->keys[i]); // apresenta todos os valores contidos no nó
         printf("\n");
-        pos = searchPos(key, ptr->keys, n);
+        pos = searchPos(key, ptr->keys, n); // pos recebe o valor da posicao da key dentro do nó
+
         if (pos < n && key == ptr->keys[pos])
         {
             printf("Key %d found in position %d of last dispalyed node\n",key,i);
+            /*
+                caso a posicao seja menor do que o numero de keys e
+                o valor da key digitada pelo usuario seja igual a
+                key da posicao pos, será printado na tela o match
+            */
             return;
         }
-        ptr = ptr->p[pos];
+        ptr = ptr->p[pos]; // utiliza-se para varrer o próximo nó
     }
     printf("Key %d is not available\n",key);
 }/*End of search()*/
 
-int searchPos(int key, int *key_arr, int n)
+void searchRootInFile(struct node* ptr) {
+    int i=0;
+    struct node* ptr2;
+    ptr2 = (struct node) malloc(64);
+    memset(ptr2,0,64);
+    ptr2->n = ptr->n;
+    for (i = 0; i < ptr->n; i++) {
+        ptr2->keys[i] = ptr->keys[i]
+        ptr2->*p[i] = ptr->*p[i]
+    }
+    ptr2->p[ptr2->n] = ptr->p[ptr->n]
+    FILE* disk = fopen(disco.c_str(), "w+");
+    fwrite(ptr2 , 64 , 1 , disk );
+    free(ptr2);
+    fclose(disk);
+}
+
+int searchPos(int key, int *key_arr, int n) //retorna a posicao da key
 {
     int pos=0;
     while (pos < n && key > key_arr[pos])
@@ -264,6 +282,7 @@ enum KeyStatus del(struct node *ptr, int key)
     n=ptr->n;
     key_arr = ptr->keys;
     p = ptr->p;
+
     min = (M - 1)/2;/*Minimum number of keys*/
 
     //Search for key to delete
@@ -470,7 +489,7 @@ int maxLevel(struct node *ptr) {
 	if (ptr) {
 		int l = 0, mr = 0, r = 0, max_depth;
 		if (ptr->p[0] != NULL) l = maxLevel(ptr->p[0]);
-		if (ptr->p[1] != NULL) mr = maxLevel(ptr->p[1]);	
+		if (ptr->p[1] != NULL) mr = maxLevel(ptr->p[1]);
 		if (ptr->n == 2) {
 			if (ptr->p[2] != NULL) r = maxLevel(ptr->p[2]);
 		}
