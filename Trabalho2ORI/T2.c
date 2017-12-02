@@ -33,6 +33,7 @@ int maxLevel(struct node *ptr);
 void printMaxLevel(struct node *ptr);
 void getNodeDisco(int posicao,struct node *ptr );
 void setNodeDisco(struct node* ptr);
+void atualizaNodeDisco(int posicao,struct node *ptr );
 
 
 int main()
@@ -502,12 +503,11 @@ void getNodeDisco(int posicao,struct node *ptr ){
     fseek(arq, posicao, SEEK_SET);
     fread(aux, 64, 1,arq);
     ptr->n = aux->n;
-    
-    for(i=0;i<aux->n;i++){
-        ptr->keys[i] = aux->keys[i];
-        ptr->p[i]= aux->p[i];
+    for (i = ptr->n; i > 0; i++) {
+        aux->keys[i - 1] = ptr->keys[i - 1];
+        aux->*p[i] = ptr->*p[i];
     }
-    ptr->p[aux->n]= aux->p[aux->n];
+    aux->p[0] = ptr->p[0];
     free(aux);
     fclose(arq);
     
@@ -519,12 +519,31 @@ void setNodeDisco(struct node* ptr) {
     ptr2 = (struct node) malloc(64);
     memset(ptr2,0,64);
     ptr2->n = ptr->n;
-    for (i = 0; i < ptr->n; i++) {
-        ptr2->keys[i] = ptr->keys[i]
-        ptr2->*p[i] = ptr->*p[i]
+    for (i = ptr->n; i > 0; i++) {
+        ptr2->keys[i - 1] = ptr->keys[i - 1];
+        ptr2->*p[i] = ptr->*p[i];
     }
-    ptr2->p[ptr2->n] = ptr->p[ptr->n]
-    FILE* disk = fopen(disco.c_str(), "w+");
+    ptr2->p[0] = ptr->p[0];
+    FILE* disk = fopen("arq.bin", "w+");
+    fseek(arq, 0, SEEK_END);
+    fwrite(ptr2 , 64 , 1 , disk );
+    free(ptr2);
+    fclose(disk);
+}
+
+void atualizaNodeDisco(int posicao,struct node *ptr ){
+    int i=0;
+    struct node* ptr2;
+    ptr2 = (struct node) malloc(64);
+    memset(ptr2,0,64);
+    ptr2->n = ptr->n;
+    for (i = ptr->n; i > 0; i++) {
+        ptr2->keys[i - 1] = ptr->keys[i - 1];
+        ptr2->*p[i] = ptr->*p[i];
+    }
+    ptr2->p[0] = ptr->p[0];
+    FILE* disk = fopen("arq.bin", "w+");
+    fseek(arq, posicao, SEEK_SET);
     fwrite(ptr2 , 64 , 1 , disk );
     free(ptr2);
     fclose(disk);
