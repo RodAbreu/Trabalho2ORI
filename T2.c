@@ -208,9 +208,10 @@ void display(struct node *ptr, int blanks)
 
 void search(int key)
 {
-    int pos, i, n;
-    struct node *ptr = root;
+    int pos, i=0, n;
+    struct node *ptr;
     printf("Search path:\n");
+    getNodeDisco(0,ptr);
     while (ptr)
     {
         n = ptr->n;
@@ -223,7 +224,7 @@ void search(int key)
             printf("Key %d found in position %d of last dispalyed node\n",key,i);
             return;
         }
-        ptr = ptr->p[pos];
+        getNodeDisco(*(ptr->p[pos]),ptr);
     }
     printf("Key %d is not available\n",key);
 }/*End of search()*/
@@ -537,7 +538,7 @@ void atualizaNodeDisco(int posicao,struct node *ptr ){
     ptr2 = (struct node) malloc(64);
     memset(ptr2,0,64);
     ptr2->n = ptr->n;
-    for (i = ptr->n; i > 0; i--) 
+    for (i = ptr->n; i > 0; i--)
         ptr2->keys[i - 1] = ptr->keys[i - 1];
         ptr2->*p[i] = ptr->*p[i];
     }
