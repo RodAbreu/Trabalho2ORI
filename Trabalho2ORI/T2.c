@@ -31,6 +31,8 @@ void getMinMax(struct node *ptr);
 int max(int first, int second, int third);
 int maxLevel(struct node *ptr);
 void printMaxLevel(struct node *ptr);
+void getNodeDisco(int posicao,struct node *ptr );
+void setNodeDisco(struct node* ptr);
 
 
 int main()
@@ -57,7 +59,7 @@ int main()
         case 1:
             printf("Enter the key : ");
             scanf("%d",&key); eatline();
-            insert(key);
+            insert(key);                                                                    //Adiciona uma nova chave
             break;
         case 2:
             printf("Enter the key : ");
@@ -100,20 +102,20 @@ int main()
 
 void insert(int key)
 {
-    struct node *newnode;
-    int upKey;
-    enum KeyStatus value;
+    struct node *newnode;                                                           //Cria um novo nó
+    int upKey;                                                                      //Inteiro paraa chave que foi promovida
+    enum KeyStatus value;                                                           //Enum com o status da insercao
     value = ins(root, key, &upKey, &newnode);
-    if (value == Duplicate)
+    if (value == Duplicate)                                                         //Caso a key já está na arvore
         printf("Key already available\n");
-    if (value == InsertIt)
+    if (value == InsertIt)                                                          //Caso de inserir, pois uma chave foi promovida
     {
-        struct node *uproot = root;
-        root=malloc(sizeof(struct node));
-        root->n = 1;
-        root->keys[0] = upKey;
-        root->p[0] = uproot;
-        root->p[1] = newnode;
+        struct node *uproot = root;                                                 //Novo nó gerado pela divisao
+        root=malloc(sizeof(struct node));                                           //Alocação de memória para o no raiz
+        root->n = 1;                                                                //Numero de chaves dentro do nó
+        root->keys[0] = upKey;                                                      //Insercao da chave promovida
+        root->p[0] = uproot;                                                        //Aponta para o antigo nó
+        root->p[1] = newnode;                                                       //Aponta para o novo nó    
     }/*End of if */
 }/*End of insert()*/
 
@@ -123,68 +125,68 @@ enum KeyStatus ins(struct node *ptr, int key, int *upKey,struct node **newnode)
     int pos, i, n,splitPos;
     int newKey, lastKey;
     enum KeyStatus value;
-    if (ptr == NULL)
+    if (ptr == NULL)                                                               //Caso não tenha um nó
     {
-        *newnode = NULL;
-        *upKey = key;
+        *newnode = NULL;                                                           //Não haverá um novo nó
+        *upKey = key;                                                              //Promovido a própria chave
         return InsertIt;
     }
-    n = ptr->n;
-    pos = searchPos(key, ptr->keys, n);
-    if (pos < n && key == ptr->keys[pos])
+    n = ptr->n;                                                                    //Pega a quantidade de keys dentro do nó
+    pos = searchPos(key, ptr->keys, n);                                            //Procura a key dentro da arvore
+    if (pos < n && key == ptr->keys[pos])                                          //Caso em que a chave já está na arvore 
         return Duplicate;
-    value = ins(ptr->p[pos], key, &newKey, &newPtr);
-    if (value != InsertIt)
+    value = ins(ptr->p[pos], key, &newKey, &newPtr);                               //Chamada recursiva
+    if (value != InsertIt)                                                         //Já inserido e tratado os casos
         return value;
     /*If keys in node is less than M-1 where M is order of B tree*/
-    if (n < M - 1)
+    if (n < M - 1)                                                                 //Caso em que é possivel adicionar uma key
     {
-        pos = searchPos(newKey, ptr->keys, n);
+        pos = searchPos(newKey, ptr->keys, n);                                     //Procura novamente
         /*Shifting the key and pointer right for inserting the new key*/
-        for (i=n; i>pos; i--)
+        for (i=n; i>pos; i--)                                                      //For para organizar as ket em ordem
         {
             ptr->keys[i] = ptr->keys[i-1];
             ptr->p[i+1] = ptr->p[i];
         }
         /*Key is inserted at exact location*/
-        ptr->keys[pos] = newKey;
-        ptr->p[pos+1] = newPtr;
-        ++ptr->n; /*incrementing the number of keys in node*/
+        ptr->keys[pos] = newKey;                                                   //Adiciona a ket
+        ptr->p[pos+1] = newPtr;                                                    //Adiciona um ponteiro
+        ++ptr->n; /*incrementing the number of keys in node*/                      //Incrementa a quantidade de keys
         return Success;
     }/*End of if */
     /*If keys in nodes are maximum and position of node to be inserted is last*/
-    if (pos == M - 1)
+    if (pos == M - 1)                                                      //Caso o nó esteja cheio e a ulttima key deve ser ins
     {
         lastKey = newKey;
-        lastPtr = newPtr;
+        lastPtr = newPtr;                                                   
     }
     else /*If keys in node are maximum and position of node to be inserted is not last*/
     {
-        lastKey = ptr->keys[M-2];
-        lastPtr = ptr->p[M-1];
-        for (i=M-2; i>pos; i--)
+        lastKey = ptr->keys[M-2];                                               //Pega a penultima chave
+        lastPtr = ptr->p[M-1];                                                  //Pega o penultima ponteiro
+        for (i=M-2; i>pos; i--)                                                 //Passa as chaves para a posicao da frente
         {
             ptr->keys[i] = ptr->keys[i-1];
             ptr->p[i+1] = ptr->p[i];
         }
-        ptr->keys[pos] = newKey;
-        ptr->p[pos+1] = newPtr;
+        ptr->keys[pos] = newKey;                                                //Recebe a chave
+        ptr->p[pos+1] = newPtr;                                                 //recebe o ponteiro
     }
-    splitPos = (M - 1)/2;
-    (*upKey) = ptr->keys[splitPos];
+    splitPos = (M - 1)/2;                                                       //Verificação da posicao da divisao
+    (*upKey) = ptr->keys[splitPos];                                             //Chave a ser promovida dada a divisao
 
     (*newnode)=malloc(sizeof(struct node));/*Right node after split*/
     ptr->n = splitPos; /*No. of keys for left splitted node*/
     (*newnode)->n = M-1-splitPos;/*No. of keys for right splitted node*/
-    for (i=0; i < (*newnode)->n; i++)
+    for (i=0; i < (*newnode)->n; i++)                                           //For para adicionar as key/ponteiros no newNode
     {
         (*newnode)->p[i] = ptr->p[i + splitPos + 1];
         if(i < (*newnode)->n - 1)
             (*newnode)->keys[i] = ptr->keys[i + splitPos + 1];
         else
-            (*newnode)->keys[i] = lastKey;
+            (*newnode)->keys[i] = lastKey;                                     //Adiciona a ultima chave
     }
-    (*newnode)->p[(*newnode)->n] = lastPtr;
+    (*newnode)->p[(*newnode)->n] = lastPtr;                                    //Adiciona o ultimo ponteiro
     return InsertIt;
 }/*End of ins()*/
 
@@ -487,4 +489,43 @@ void printMaxLevel(struct node *ptr) {
 	int max = maxLevel(ptr) - 1;
 	if (max == -1) printf("tree is empty\n");
 	else printf("%d\n", max);
+}
+
+void getNodeDisco(int posicao,struct node *ptr ){
+    struct node *aux;
+    int i = 0;
+    
+    aux = malloc(64);
+    memset(aux,0,64);
+    
+    FILE* arq = fopen("arq.bin", "r+b");
+    fseek(arq, posicao, SEEK_SET);
+    fread(aux, 64, 1,arq);
+    ptr->n = aux->n;
+    
+    for(i=0;i<aux->n;i++){
+        ptr->keys[i] = aux->keys[i];
+        ptr->p[i]= aux->p[i];
+    }
+    ptr->p[aux->n]= aux->p[aux->n];
+    free(aux);
+    fclose(arq);
+    
+}
+
+void setNodeDisco(struct node* ptr) {
+    int i=0;
+    struct node* ptr2;
+    ptr2 = (struct node) malloc(64);
+    memset(ptr2,0,64);
+    ptr2->n = ptr->n;
+    for (i = 0; i < ptr->n; i++) {
+        ptr2->keys[i] = ptr->keys[i]
+        ptr2->*p[i] = ptr->*p[i]
+    }
+    ptr2->p[ptr2->n] = ptr->p[ptr->n]
+    FILE* disk = fopen(disco.c_str(), "w+");
+    fwrite(ptr2 , 64 , 1 , disk );
+    free(ptr2);
+    fclose(disk);
 }
