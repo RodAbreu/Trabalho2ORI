@@ -84,7 +84,7 @@ int main()
             printTotal(root);
             break;
         case 8:
-            getMinMax(root);
+            getMinMax(root); 
             break;
         case 9:
         	printf("The maximum level in this tree is:\n");
@@ -470,7 +470,7 @@ int maxLevel(struct node *ptr) {
 	if (ptr) {
 		int l = 0, mr = 0, r = 0, max_depth;
 		if (ptr->p[0] != NULL) l = maxLevel(ptr->p[0]);
-		if (ptr->p[1] != NULL) mr = maxLevel(ptr->p[1]);
+		if (ptr->p[1] != NULL) mr = maxLevel(ptr->p[1]);	
 		if (ptr->n == 2) {
 			if (ptr->p[2] != NULL) r = maxLevel(ptr->p[2]);
 		}
