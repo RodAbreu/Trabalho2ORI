@@ -14,6 +14,13 @@ struct node {
     int  p[M]; /* (n+1 pointers will be in use) */
 }*root=NULL;
 
+struct nodeM {
+    int n; /* n < M No. of keys in node will always less than order of B tree */
+    int keys[M-1]; /*array of keys*/
+    struct nodeM *p[M]; /* (n+1 pointers will be in use) */
+}*rootM=NULL;
+
+
 enum KeyStatus { Duplicate,SearchFailure,Success,InsertIt,LessKeys };
 
 void insert(int key);
@@ -37,7 +44,11 @@ struct node * getNodeDisco(int posicao);
 void addNodeDisco(struct node* ptr);
 void atualizaNodeDisco(struct node *ptr );
 struct node * criaNode();
+struct nodeM *convertToNodeM(int end);
+struct nodeM* criaArvoreM(int end);
 
+struct node *convertToNode(struct nodeM**);
+int criaArvoreArq(struct nodeM* aux);
 
 int main()
 {
@@ -48,7 +59,7 @@ int main()
     printf("Creation of B tree for M=%d\n",M);
     while(1)
     {
-        printf("1.Insert Fuck\n");
+        printf("1.Insert\n");
         printf("2.Delete\n");
         printf("3.Search\n");
         printf("4.Display\n");
@@ -63,14 +74,18 @@ int main()
         switch(choice)
         {
         case 1:
-            printf("Enter the key aaaaaaaaaaaaaaaaaaaaa : ");
+            printf("Enter the key : ");
             scanf("%d",&key); eatline();
             insert(key);                                                                    //Adiciona uma nova chave
             break;
         case 2:
-            printf("Enter the key : ");
-            scanf("%d",&key); eatline();
-            DelNode(key);
+            
+            rootM= criaArvoreM(root->endereco);
+            FILE* disk = fopen("arq.bin", "w+b");
+            fclose(disk);
+            root=NULL;
+            criaArvoreArq(rootM);
+            getNodeDisco(root->endereco);
             break;
         case 3:
             printf("Enter the key : ");
@@ -116,7 +131,6 @@ void insert(int key)
         printf("Key already available\n");
     if (value == InsertIt)                                                          //Caso de inserir, pois uma chave foi promovida
     {
-        printf("Olar");
         struct node *uproot = root;                                                 //Novo nó gerado pela divisao
         root = criaNode();                                           //Alocação de memória para o no raiz
         root->n = 1;                                                                //Numero de chaves dentro do nó
@@ -133,7 +147,7 @@ void insert(int key)
         printf("\nEndereco = %d\n",root->p[0]); 
         printf("\nEndereco = %d\n", root->p[1] );
         addNodeDisco(root);
-        printf("sdioadioasdioasidosaiodais",root->keys[0]);
+        printf("sdioadioasdioasidosaiodais");
         
     }/*End of if */
 }/*End of insert()*/
@@ -190,7 +204,6 @@ enum KeyStatus ins(struct node *ptr, int key, int *upKey,struct node **newnode)
     lastPtr = criaNode();
     if (pos == M - 1)                                           //Caso o nó esteja cheio e a ulttima key deve ser ins
     {
-        printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         lastKey = newKey;
         if(newPtr != NULL){
             lastPtr->endereco = newPtr->endereco;
@@ -606,6 +619,9 @@ void addNodeDisco(struct node* ptr) {
     int i=0;
     struct node* ptr2;
     ptr2 =  malloc(64);
+    if(ptr == NULL){
+        printf("FOMEEEEEEEEEEEE");
+    }
     memset(ptr2,0,64);
     ptr2->n = ptr->n;
     for (i = ptr->n; i > 0; i--) {
@@ -651,3 +667,83 @@ struct node * criaNode(){
     }    
     return ptr;
 };
+struct nodeM *convertToNodeM(int end){
+    struct node *aux;
+    struct nodeM *ptr;
+    int size =0;
+    int i = 0;
+    FILE* arq = fopen("arq.bin", "r+b");
+    if (arq != NULL && end != -1)
+    {
+        ptr = malloc(sizeof(struct nodeM));
+        aux = malloc(64);
+        fseek(arq, end, SEEK_SET);
+        fread(aux, 64, 1,arq);
+        ptr->n = aux->n;
+        for (i = ptr->n ; i > 0; i--) {
+            ptr->keys[i - 1] = aux->keys[i - 1];
+        }
+        free(aux);
+        fclose(arq);
+        return ptr;
+       
+    }else{
+        return NULL;
+    }
+    
+    
+}
+struct nodeM* criaArvoreM(int end){
+    int i=0;
+    struct node *aux;
+    struct nodeM *auxM;
+    
+    aux = getNodeDisco(end);    
+    auxM = convertToNodeM(end);
+    
+    for(i=0;i<auxM->n;i++){
+        auxM->p[i] = convertToNodeM(aux->p[i]);
+    }
+    auxM->p[auxM->n] = convertToNodeM(aux->p[auxM->n]);
+    
+    return auxM;
+}
+struct node *convertToNode(struct nodeM** aux){
+    ;
+    int size =0;
+    int i = 0;
+    struct node *a;
+    a = malloc(sizeof(struct node));
+    if ((*aux) != NULL  )
+    {
+        a->n = (*aux)->n;
+        for (i = a->n ; i > 0; i--) {
+            a->keys[i - 1] = (*aux)->keys[i - 1];
+            printf("A:%d\n",a->keys[i - 1] );
+        }
+        
+        printf("Tam:%d\n",a->n );
+        return a;
+       
+    }else{
+        return NULL;
+    }
+}
+
+int criaArvoreArq(struct nodeM* aux){
+    int i=0;
+    if(aux != NULL){
+            for (i = 0 ; i < aux->n; i++) {
+                insert(aux->keys[i]);
+                printf("akdoaskdosa");
+            }
+            for(i=0;i<=aux->n;i++){
+                    criaArvoreArq(aux->p[i]) ;
+            }
+            return 1;
+        
+        printf("eita2");
+        return -1;
+    }
+    return -1;
+}
