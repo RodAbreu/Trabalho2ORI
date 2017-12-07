@@ -29,7 +29,7 @@ void DelNode(int x);
 void search(int x);
 enum KeyStatus ins(struct node *r, int x, int* y, struct node** u);
 int searchPos(int x,int *key_arr, int n);
-enum KeyStatus del(struct node *r, int x);
+enum KeyStatus del(struct nodeM *r, int x);
 void eatline(void);
 void inorder(struct node *ptr);
 int totalKeys(struct node *ptr);
@@ -38,11 +38,13 @@ int getMin(struct node *ptr);
 int getMax(struct node *ptr);
 void getMinMax(struct node *ptr);
 int max(int first, int second, int third);
-int maxLevel(struct node *ptr);
+// int maxLevel(struct node *ptr);
 void printMaxLevel(struct node *ptr);
-struct node * getNodeDisco(int posicao);
-void addNodeDisco(struct node* ptr);
-void atualizaNodeDisco(struct node *ptr );
+struct node * getNodeDisco(int posicao);                            //Pega o nó no arquivo
+void addNodeDisco(struct node* ptr);                                //Adiciona um nó no arquivo
+void atualizaNodeDisco(struct node *ptr );                          //Atualiza um nó do arquivo
+
+
 struct node * criaNode();
 struct nodeM *convertToNodeM(int end);
 struct nodeM* criaArvoreM(int end);
@@ -79,13 +81,13 @@ int main()
             insert(key);                                                                    //Adiciona uma nova chave
             break;
         case 2:
-            
             rootM= criaArvoreM(root->endereco);
             FILE* disk = fopen("arq.bin", "w+b");
             fclose(disk);
             root=NULL;
+            scanf("%d",&key); eatline();
+            DelNode(key);
             criaArvoreArq(rootM);
-            getNodeDisco(root->endereco);
             break;
         case 3:
             printf("Enter the key : ");
@@ -144,10 +146,7 @@ void insert(int key)
         else{
             root->p[1] = newnode->endereco;
         }
-        printf("\nEndereco = %d\n",root->p[0]); 
-        printf("\nEndereco = %d\n", root->p[1] );
         addNodeDisco(root);
-        printf("sdioadioasdioasidosaiodais");
         
     }/*End of if */
 }/*End of insert()*/
@@ -275,12 +274,13 @@ void search(int key)
     struct node *ptr;
     printf("Search path:\n");
     ptr = getNodeDisco(root->endereco);
-    printf("%d\n",ptr->keys[0]);
     while (fim  == 0 && ptr)
     {
         n = ptr->n;
         for (i=0; i < ptr->n; i++)
-            pos = searchPos(key, ptr->keys, n);
+            printf(" %d",ptr->keys[i]);
+        printf("\n");
+        pos = searchPos(key, ptr->keys, n);
         if (pos < n && key == ptr->keys[pos])
         {
             printf("Key %d found in position %d of last dispalyed node\n",key,i);
@@ -298,54 +298,48 @@ void search(int key)
 int searchPos(int key, int *key_arr, int n)
 {
     int pos=0;
-    while (pos < n && key > key_arr[pos]){
+    while (pos < n && key > key_arr[pos])
         pos++;
-        printf("%d",key_arr[pos]);
-    }
     return pos;
 }/*End of searchPos()*/
 
 void DelNode(int key)
 {
-    struct node *uproot;
+    struct nodeM *uproot;
     enum KeyStatus value;
-    value = del(root,key);
+    value = del(rootM,key);
     switch (value)
     {
     case SearchFailure:
         printf("Key %d is not available\n",key);
         break;
     case LessKeys:
-        uproot = root;
-        root->endereco = root->p[0];
+        uproot = rootM;
+        rootM = rootM->p[0];
         free(uproot);
         break;
     }/*End of switch*/
 }/*End of delnode()*/
 
-enum KeyStatus del(struct node *ptr, int key)
+enum KeyStatus del(struct nodeM *ptr, int key)
 {
     int pos, i, pivot, n ,min;
     int *key_arr;
     enum KeyStatus value;
-    struct node **p,*lptr,*rptr;
+    struct nodeM **p,*lptr,*rptr;
 
     if (ptr == NULL)
         return SearchFailure;
     /*Assigns values of node*/
     n=ptr->n;
     key_arr = ptr->keys;
-    p[0]->endereco = ptr->p[0];
-    p[1]->endereco = ptr->p[1];
-    p[2]->endereco = ptr->p[2];
-    p[3]->endereco = ptr->p[3];
-    p[4]->endereco = ptr->p[4];
+    p = ptr->p;
     min = (M - 1)/2;/*Minimum number of keys*/
 
     //Search for key to delete
     pos = searchPos(key, key_arr, n);
     // p is a leaf
-    if (p[0]->endereco == -1)
+    if (p[0] == NULL)
     {
         if (pos == n || key < key_arr[pos])
             return SearchFailure;
@@ -355,19 +349,18 @@ enum KeyStatus del(struct node *ptr, int key)
             key_arr[i-1] = key_arr[i];
             p[i] = p[i+1];
         }
-        return --ptr->n >= (ptr==root ? 1 : min) ? Success : LessKeys;
+        return --ptr->n >= (ptr==rootM ? 1 : min) ? Success : LessKeys;
     }/*End of if */
 
     //if found key but p is not a leaf
     if (pos < n && key == key_arr[pos])
     {
-        struct node *qp, *qp1;
-        qp->endereco =  p[pos]->endereco;
+        struct nodeM *qp = p[pos], *qp1;
         int nkey;
         while(1)
         {
             nkey = qp->n;
-            qp1->endereco = qp->p[nkey];
+            qp1 = qp->p[nkey];
             if (qp1 == NULL)
                 break;
             qp = qp1;
@@ -440,7 +433,7 @@ enum KeyStatus del(struct node *ptr, int key)
         key_arr[i-1] = key_arr[i];
         p[i] = p[i+1];
     }
-    return --ptr->n >= (ptr == root ? 1 : min) ? Success : LessKeys;
+    return --ptr->n >= (ptr == rootM ? 1 : min) ? Success : LessKeys;
 }/*End of del()*/
 
 void eatline(void) {
@@ -619,9 +612,6 @@ void addNodeDisco(struct node* ptr) {
     int i=0;
     struct node* ptr2;
     ptr2 =  malloc(64);
-    if(ptr == NULL){
-        printf("FOMEEEEEEEEEEEE");
-    }
     memset(ptr2,0,64);
     ptr2->n = ptr->n;
     for (i = ptr->n; i > 0; i--) {
@@ -719,10 +709,8 @@ struct node *convertToNode(struct nodeM** aux){
         a->n = (*aux)->n;
         for (i = a->n ; i > 0; i--) {
             a->keys[i - 1] = (*aux)->keys[i - 1];
-            printf("A:%d\n",a->keys[i - 1] );
         }
         
-        printf("Tam:%d\n",a->n );
         return a;
        
     }else{
@@ -734,16 +722,15 @@ int criaArvoreArq(struct nodeM* aux){
     int i=0;
     if(aux != NULL){
             for (i = 0 ; i < aux->n; i++) {
+                
                 insert(aux->keys[i]);
-                printf("akdoaskdosa");
             }
             for(i=0;i<=aux->n;i++){
                     criaArvoreArq(aux->p[i]) ;
             }
-            return 1;
-        
+            
         printf("eita2");
-        return -1;
+            return 1;
     }
     return -1;
 }
